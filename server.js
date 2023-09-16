@@ -4,14 +4,19 @@ const express = require('express');
 const line = require('@line/bot-sdk');
 const axios = require("axios");
 
+// LINE Secret
 const config = {
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-    channelSecret: process.env.LINE_CHANNEL_SECRET
+    channelSecret: process.env.LINE_CHANNEL_SECRET,
 };
+
+// ZOOM Secret
+const ZoomAccountId =  process.env.ZOOM_ACCOUNT_ID
+const ZoomClientId = process.env.ZOOM_CLIENT_ID
+const ZoomClientSecret = process.env.ZOOM_CLIENT_SECRET
 
 const app = express();
 app.post('/linewebhook', line.middleware(config), (req, res) => {
-    console.log(JSON.stringify(req.body))
     Promise
         .all(req.body.events.map(handleEvent))
         .then((result) => res.json(result));
@@ -21,26 +26,24 @@ const client = new line.Client(config);
 
 async function handleEvent(event) {
     console.log(`event: ${JSON.stringify(event)}`)
+
     if (event.type !== 'message' || event.message.type !== 'text' || event.message.text !== 'zoom') {
         return Promise.resolve(null);
     }
 
-    const accountId =  process.env.ZOOM_ACCOUNT_ID
-    const clientId = process.env.ZOOM_CLIENT_ID
-    const clientSecret = process.env.ZOOM_CLIENT_SECRET
-
-    const baseNc = Buffer.from(clientId + ":" + clientSecret).toString('base64');
-
+    const baseNc = Buffer.from(ZoomClientId + ":" + ZoomClientSecret).toString('base64');
     try {
-        // ZOOMアクセストークン取得
+        // Issue Zoom token
+        // API Reference: https://developers.zoom.us/docs/internal-apps/s2s-oauth/
         const tokenResponse = await axios({
             method: 'post',
-            url: "https://zoom.us/oauth/token?grant_type=account_credentials&account_id="+ accountId,
+            url: "https://zoom.us/oauth/token?grant_type=account_credentials&account_id="+ ZoomAccountId,
             headers: { 'Authorization': 'Basic ' + baseNc }
         })
         const token = tokenResponse.data.access_token
 
-        // ミーティングURL発行
+        // Create a meeting url
+        // API Reference: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingCreate
         const now = getNow()
         const mtgResponse = await axios({
             method: 'post',
@@ -61,7 +64,7 @@ async function handleEvent(event) {
         })
         const meetingUrl = mtgResponse.data.join_url
 
-        // chatbot返信部分
+        // Send Reply message
         return client.replyMessage(event.replyToken, [
             {
                 type: 'text',
