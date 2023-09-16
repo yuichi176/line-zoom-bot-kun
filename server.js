@@ -9,6 +9,7 @@ const config = {
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
     channelSecret: process.env.LINE_CHANNEL_SECRET,
 };
+const client = new line.Client(config);
 
 // ZOOM Secret
 const ZoomAccountId =  process.env.ZOOM_ACCOUNT_ID
@@ -16,13 +17,13 @@ const ZoomClientId = process.env.ZOOM_CLIENT_ID
 const ZoomClientSecret = process.env.ZOOM_CLIENT_SECRET
 
 const app = express();
+
+// routing
 app.post('/linewebhook', line.middleware(config), (req, res) => {
     Promise
         .all(req.body.events.map(handleEvent))
         .then((result) => res.json(result));
 });
-
-const client = new line.Client(config);
 
 async function handleEvent(event) {
     console.log(`event: ${JSON.stringify(event)}`)
@@ -30,40 +31,11 @@ async function handleEvent(event) {
     if (event.type !== 'message' || event.message.type !== 'text' || event.message.text !== 'zoom') {
         return Promise.resolve(null);
     }
-
-    const baseNc = Buffer.from(ZoomClientId + ":" + ZoomClientSecret).toString('base64');
     try {
         // Issue Zoom token
-        // API Reference: https://developers.zoom.us/docs/internal-apps/s2s-oauth/
-        const tokenResponse = await axios({
-            method: 'post',
-            url: "https://zoom.us/oauth/token?grant_type=account_credentials&account_id="+ ZoomAccountId,
-            headers: { 'Authorization': 'Basic ' + baseNc }
-        })
-        const token = tokenResponse.data.access_token
-
+        const token = await issueZoomToken()
         // Create a meeting url
-        // API Reference: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingCreate
-        const now = getNow()
-        const mtgResponse = await axios({
-            method: 'post',
-            url: 'https://api.zoom.us/v2/users/me/meetings',
-            headers: { 'Authorization': 'Bearer ' + token },
-            data: {
-                'topic': 'people meeting',
-                "type": "1", // 1:Daily, 2:Weekly, 3:Monthly
-                "start_time": now,
-                'timezone': 'Asia/Tokyo',
-                'settings': {
-                    "waiting_room": false,
-                    "join_before_host": true,
-                    "mute_upon_entry": true,
-                    "use_pmi": false
-                }
-            }
-        })
-        const meetingUrl = mtgResponse.data.join_url
-
+        const meetingUrl = await createZoomMeeting(token)
         // Send Reply message
         return client.replyMessage(event.replyToken, [
             {
@@ -81,6 +53,52 @@ async function handleEvent(event) {
 }
 
 app.listen(process.env.PORT);
+
+// Issue Zoom token
+// API Reference: https://developers.zoom.us/docs/internal-apps/s2s-oauth/
+async function issueZoomToken() {
+    const baseNc = Buffer.from(ZoomClientId + ":" + ZoomClientSecret).toString('base64');
+    try {
+        const tokenResponse = await axios({
+            method: 'post',
+            url: "https://zoom.us/oauth/token?grant_type=account_credentials&account_id="+ ZoomAccountId,
+            headers: { 'Authorization': 'Basic ' + baseNc }
+        })
+        return tokenResponse.data.access_token
+    } catch (error) {
+        console.error('Fail to issue Zoom Token:', error);
+        throw error;
+    }
+}
+
+// Create a meeting url
+// API Reference: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingCreate
+async function createZoomMeeting(token) {
+    const now = getNow()
+    try {
+        const mtgResponse = await axios({
+            method: 'post',
+            url: 'https://api.zoom.us/v2/users/me/meetings',
+            headers: { 'Authorization': 'Bearer ' + token },
+            data: {
+                'topic': 'people meeting',
+                "type": "1", // 1:Daily, 2:Weekly, 3:Monthly
+                "start_time": now,
+                'timezone': 'Asia/Tokyo',
+                'settings': {
+                    "waiting_room": false,
+                    "join_before_host": true,
+                    "mute_upon_entry": true,
+                    "use_pmi": false
+                }
+            }
+        })
+        return mtgResponse.data.join_url
+    } catch (error) {
+        console.error('Fail to create mtg url:', error);
+        throw error;
+    }
+}
 
 function getNow() {
     const now = new Date();
