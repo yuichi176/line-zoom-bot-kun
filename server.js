@@ -28,27 +28,33 @@ app.post('/linewebhook', line.middleware(config), (req, res) => {
 async function handleEvent(event) {
     console.log(`event: ${JSON.stringify(event)}`)
 
-    if (event.type !== 'message' || event.message.type !== 'text' || event.message.text !== 'zoom') {
+    if (event.type !== 'message' || event.message.type !== 'text') {
         return Promise.resolve(null);
     }
-    try {
-        // Issue Zoom token
-        const token = await issueZoomToken()
-        // Create a meeting url
-        const meetingUrl = await createZoomMeeting(token)
-        // Send Reply message
-        return client.replyMessage(event.replyToken, [
-            {
-                type: 'text',
-                text: "わかったよ"
-            },
-            {
-                type: 'text',
-                text: meetingUrl
-            }
-        ]);
-    } catch (error) {
-        console.error(error);
+
+    const text = event.message.text.trim()
+    if (isZoom(text)) {
+        try {
+            // Issue Zoom token
+            const token = await issueZoomToken()
+            // Create a meeting url
+            const meetingUrl = await createZoomMeeting(token)
+            // Send Reply message
+            return client.replyMessage(event.replyToken, [
+                {
+                    type: 'text',
+                    text: "わかったよ"
+                },
+                {
+                    type: 'text',
+                    text: meetingUrl
+                }
+            ]);
+        } catch (error) {
+            console.error(error);
+        }
+    } else {
+        return Promise.resolve(null);
     }
 }
 
@@ -111,4 +117,9 @@ function getNow() {
     const seconds = String(now.getSeconds()).padStart(2, '0');
 
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+}
+
+function isZoom(text) {
+    const regex = /zoom/i;
+    return regex.test(text);
 }
