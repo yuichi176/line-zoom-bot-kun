@@ -55,15 +55,30 @@ async function handleEvent(event) {
         }
     } else if (isSchedule(text)) {
         try {
-            // Send Reply message
+            // Send datetimepicker
             return client.replyMessage(event.replyToken, {
-                "type": "datetimepicker",
-                "label": "Select date",
-                "data": "storeId=12345",
-                "mode": "date",
-                "initial": "2023-09-16t00:00",
-                "max": "2023-09-16t00:00",
-                "min": "2023-11-16t00:00"
+                "type": "template",
+                "altText": "This is a datetime_picker for zoom meeting",
+                "template": {
+                    "type": "buttons",
+                    // "thumbnailImageUrl": "https://example.com/bot/images/image.jpg",
+                    // "imageAspectRatio": "rectangle",
+                    // "imageSize": "cover",
+                    // "imageBackgroundColor": "#FFFFFF",
+                    // "title": "",
+                    "text": "zoomのミーティングを予約するよ",
+                    "actions": [
+                        {
+                            "type": "datetimepicker",
+                            "label": "日時を選んでね",
+                            "data": "action=settim",
+                            "mode": "datetime",
+                            "initial": "2017-12-25t00:00",
+                            "max": "2018-01-24t23:59",
+                            "min": "2017-12-25t00:00"
+                        }
+                    ]
+                }
             });
         } catch (error) {
             console.error(error);
