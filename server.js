@@ -41,18 +41,24 @@ async function handleEvent(event) {
         const token = tokenResponse.data.access_token
 
         // ミーティングURL発行
+        const now = getNow()
         const mtgResponse = await axios({
             method: 'post',
             url: 'https://api.zoom.us/v2/users/me/meetings',
             headers: { 'Authorization': 'Bearer ' + token },
             data: {
                 'topic': 'people meeting',
-                'type': '1',
+                "type": "1", // 1:Daily, 2:Weekly, 3:Monthly
+                "start_time": now,
                 'timezone': 'Asia/Tokyo',
-                'settings': { 'use_pmi': 'false' }
+                'settings': {
+                    "waiting_room": false,
+                    "join_before_host": true,
+                    "mute_upon_entry": true,
+                    "use_pmi": false
+                }
             }
         })
-        console.log(`url: ${mtgResponse.data.join_url}`)
         const meetingUrl = mtgResponse.data.join_url
 
         // chatbot返信部分
@@ -72,3 +78,16 @@ async function handleEvent(event) {
 }
 
 app.listen(process.env.PORT);
+
+function getNow() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+}
