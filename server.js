@@ -53,6 +53,21 @@ async function handleEvent(event) {
         } catch (error) {
             console.error(error);
         }
+    } else if (isSchedule(text)) {
+        try {
+            // Send Reply message
+            return client.replyMessage(event.replyToken, {
+                "type": "datetimepicker",
+                "label": "Select date",
+                "data": "storeId=12345",
+                "mode": "date",
+                "initial": "2023-09-16t00:00",
+                "max": "2023-09-16t00:00",
+                "min": "2023-11-16t00:00"
+            });
+        } catch (error) {
+            console.error(error);
+        }
     } else {
         return Promise.resolve(null);
     }
@@ -121,5 +136,10 @@ function getNow() {
 
 function isZoom(text) {
     const regex = /zoom/i;
+    return regex.test(text);
+}
+
+function  isSchedule(text) {
+    const regex = /次回/;
     return regex.test(text);
 }
