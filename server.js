@@ -71,7 +71,7 @@ async function handleEvent(event) {
                         {
                             "type": "datetimepicker",
                             "label": "日時を選んでね",
-                            "data": "action=settim",
+                            "data": "action=settime",
                             "mode": "datetime",
                             "initial": "2017-12-25t00:00",
                             "max": "2018-01-24t23:59",
