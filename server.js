@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const line = require('@line/bot-sdk');
 const axios = require("axios");
@@ -9,6 +11,7 @@ const config = {
 
 const app = express();
 app.post('/linewebhook', line.middleware(config), (req, res) => {
+    console.log(JSON.stringify(req.body))
     Promise
         .all(req.body.events.map(handleEvent))
         .then((result) => res.json(result));
@@ -22,7 +25,6 @@ async function handleEvent(event) {
         return Promise.resolve(null);
     }
 
-    // zoomURL発行
     const accountId =  process.env.ZOOM_ACCOUNT_ID
     const clientId = process.env.ZOOM_CLIENT_ID
     const clientSecret = process.env.ZOOM_CLIENT_SECRET
@@ -30,16 +32,15 @@ async function handleEvent(event) {
     const baseNc = Buffer.from(clientId + ":" + clientSecret).toString('base64');
 
     try {
-        // アクセストークン取得
+        // ZOOMアクセストークン取得
         const tokenResponse = await axios({
             method: 'post',
             url: "https://zoom.us/oauth/token?grant_type=account_credentials&account_id="+ accountId,
             headers: { 'Authorization': 'Basic ' + baseNc }
         })
-        console.log(`token: ${tokenResponse.data.access_token}`)
         const token = tokenResponse.data.access_token
 
-        // ミーティングURL取得
+        // ミーティングURL発行
         const mtgResponse = await axios({
             method: 'post',
             url: 'https://api.zoom.us/v2/users/me/meetings',
