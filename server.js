@@ -58,7 +58,7 @@ async function handleEvent(event) {
                 "template": {
                     "type": "buttons",
                     "title": "zoomミーティングの予約",
-                    // "text": "日時を選んでね",
+                    "text": "日時を選んでね",
                     "actions": [
                         {
                             "type": "datetimepicker",
@@ -84,25 +84,15 @@ async function handleEvent(event) {
                     "type": "confirm",
                     "text": `${datetime} で問題ないかな?`,
                     "actions": [
-                        // {
-                        //     "type": "postback",
-                        //     "label": "はい",
-                        //     "data": `action=reserve-confirm-yes&datetime=${event.postback.data}`,
-                        // },
-                        // {
-                        //     "type": "postback",
-                        //     "label": "いいえ",
-                        //     "data": "action=reserve-confirm-no",
-                        // }
                         {
-                            "type": "message",
+                            "type": "postback",
                             "label": "はい",
-                            "text": "はい"
+                            "data": `action=reserve-confirm-yes&datetime=${event.postback.data}`,
                         },
                         {
-                            "type": "message",
+                            "type": "postback",
                             "label": "いいえ",
-                            "text": "いいえ"
+                            "data": "action=reserve-confirm-no",
                         }
                     ]
                 }
