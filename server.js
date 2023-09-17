@@ -28,12 +28,8 @@ app.post('/linewebhook', line.middleware(config), (req, res) => {
 async function handleEvent(event) {
     console.log(`event: ${JSON.stringify(event)}`)
 
-    if (event.type !== 'message' || event.message.type !== 'text') {
-        return Promise.resolve(null);
-    }
-
     const text = event.message.text.trim()
-    if (isZoom(text)) {
+    if (event.type === 'message' && event.message.type === 'text' && isZoom(text)) {
         try {
             // Issue Zoom token
             const token = await issueZoomToken()
@@ -53,29 +49,26 @@ async function handleEvent(event) {
         } catch (error) {
             console.error(error);
         }
-    } else if (isSchedule(text)) {
+    } else if (event.type === 'message' && event.message.type === 'text' && isSchedule(text)) {
         try {
             // Send datetimepicker
+            // API Reference: https://developers.line.biz/ja/reference/messaging-api/#template-messages
             return client.replyMessage(event.replyToken, {
                 "type": "template",
                 "altText": "This is a datetime_picker for zoom meeting",
                 "template": {
                     "type": "buttons",
-                    // "thumbnailImageUrl": "https://example.com/bot/images/image.jpg",
-                    // "imageAspectRatio": "rectangle",
-                    // "imageSize": "cover",
-                    // "imageBackgroundColor": "#FFFFFF",
-                    // "title": "",
-                    "text": "zoomのミーティングを予約するよ",
+                    "title": "zoomのミーティングを予約するよ",
+                    "text": "日時を選んでね",
                     "actions": [
                         {
                             "type": "datetimepicker",
-                            "label": "日時を選んでね",
+                            "label": "日時を選択",
                             "data": "action=settime",
                             "mode": "datetime",
-                            "initial": "2017-12-25t00:00",
-                            "max": "2018-01-24t23:59",
-                            "min": "2017-12-25t00:00"
+                            // "initial": "2017-12-25t00:00",
+                            // "max": "2018-01-24t23:59",
+                            // "min": "2017-12-25t00:00"
                         }
                     ]
                 }
@@ -83,6 +76,9 @@ async function handleEvent(event) {
         } catch (error) {
             console.error(error);
         }
+    } else if (event.type === 'postback') {
+        console.log(`data: ${event.postback.data}`);
+        console.log(`params: ${JSON.stringify(event.postback.data)}`);
     } else {
         return Promise.resolve(null);
     }
