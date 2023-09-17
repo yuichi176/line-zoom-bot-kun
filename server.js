@@ -51,23 +51,20 @@ async function handleEvent(event) {
     } else if (event.type === 'message' && event.message.type === 'text' && isSchedule(event.message.text)) {
         try {
             // Send datetimepicker
-            // API Reference: https://developers.line.biz/ja/reference/messaging-api/#template-messages
+            // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
             return client.replyMessage(event.replyToken, {
                 "type": "template",
                 "altText": "This is a datetime_picker for zoom meeting",
                 "template": {
                     "type": "buttons",
-                    "title": "zoomのミーティングを予約するよ",
+                    "title": "zoomミーティングの予約",
                     "text": "日時を選んでね",
                     "actions": [
                         {
                             "type": "datetimepicker",
                             "label": "日時を選択",
-                            "data": "action=settime",
+                            "data": "reserve-zoom-meeting",
                             "mode": "datetime",
-                            // "initial": "2017-12-25t00:00",
-                            // "max": "2018-01-24t23:59",
-                            // "min": "2017-12-25t00:00"
                         }
                     ]
                 }
@@ -75,20 +72,34 @@ async function handleEvent(event) {
         } catch (error) {
             console.error(error);
         }
-    } else if (event.type === 'postback') {
-        console.log(`data: ${event.postback.data}`);
-        console.log(`params: ${JSON.stringify(event.postback.params)}`);
-        // Send Reply message
-        return client.replyMessage(event.replyToken, [
-            {
-                type: 'text',
-                text: "以下の日時にzoomのurlを送るね"
-            },
-            {
-                type: 'text',
-                text: event.postback.params.datetime
-            }
-        ]);
+    } else if (event.type === 'postback' && event.postback.data === 'reserve-zoom-meeting') {
+        const datetime = formatDate(event.postback.params.datetime)
+        try {
+            // Send Reply message
+            // API Reference: https://developers.line.biz/ja/reference/messaging-api/#confirm
+            return client.replyMessage(event.replyToken, {
+                "type": "template",
+                "altText": "this is a confirm template for zoom meeting reservation",
+                "template": {
+                    "type": "confirm",
+                    "text": `${datetime} で問題ないかな?`,
+                    "actions": [
+                        {
+                            "type": "message",
+                            "label": "Yes",
+                            "text": "はい"
+                        },
+                        {
+                            "type": "message",
+                            "label": "No",
+                            "text": "いいえ"
+                        }
+                    ]
+                }
+            })
+        } catch (error) {
+            console.error(error);
+        }
     } else {
         return Promise.resolve(null);
     }
@@ -153,6 +164,22 @@ function getNow() {
     const seconds = String(now.getSeconds()).padStart(2, '0');
 
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+}
+
+// 2017-12-25T01:00 → 2017年12月25日 1時00分
+function formatDate(inputDate) {
+    const date = new Date(inputDate);
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // 月は0から始まるため+1
+    const day = date.getDate();
+    const hours = date.getHours();
+    let minutes = date.getMinutes();
+    if (minutes.toString().length === 1) {
+        minutes = `0` + minutes
+    }
+
+    return `${year}年${month}月${day}日 ${hours}時${minutes}分`;
 }
 
 function isZoom(text) {
