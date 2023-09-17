@@ -91,7 +91,7 @@ async function handleEvent(event) {
                     "altText": "this is a confirm template for zoom meeting reservation",
                     "template": {
                         "type": "confirm",
-                        "text": `${datetime} で問題ないかな?`,
+                        "text": `${datetime}で問題ないかな?`,
                         "actions": [
                             {
                                 "type": "postback",
@@ -111,11 +111,18 @@ async function handleEvent(event) {
             }
         } else if (data.action === 'reserve-confirm-yes') {
             // TODO: impl
+            const datetime = formatDate(data.datetime)
             try {
-                return client.replyMessage(event.replyToken, {
-                    type: 'text',
-                    text: "以下の日時でミーティングを予約したよ"
-                });
+                return client.replyMessage(event.replyToken, [
+                    {
+                        type: 'text',
+                        text: `ミーティングを予約したよ\n${datetime}`
+                    },
+                    {
+                        type: 'text',
+                        text: `当日お知らせするね`
+                    }
+                ]);
             } catch (error) {
                 console.error(error);
             }
