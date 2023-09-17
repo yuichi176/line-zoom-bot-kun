@@ -86,26 +86,52 @@ async function handleEvent(event) {
             try {
                 // Send Reply message
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#confirm
-                return client.replyMessage(event.replyToken, {
-                    "type": "template",
-                    "altText": "this is a confirm template for zoom meeting reservation",
-                    "template": {
-                        "type": "confirm",
-                        "text": `「${datetime}」\nで問題ないかな?`,
-                        "actions": [
-                            {
-                                "type": "postback",
-                                "label": "はい",
-                                "data": `action=reserve-confirm-yes&datetime=${event.postback.params.datetime}`,
-                            },
-                            {
-                                "type": "postback",
-                                "label": "いいえ",
-                                "data": "action=reserve-confirm-no",
-                            }
-                        ]
+                return client.replyMessage(event.replyToken,
+                //     {
+                //     "type": "template",
+                //     "altText": "this is a confirm template for zoom meeting reservation",
+                //     "template": {
+                //         "type": "confirm",
+                //         "text": `以下の日程で問題ないかな？\n${datetime}`,
+                //         "actions": [
+                //             {
+                //                 "type": "postback",
+                //                 "label": "はい",
+                //                 "data": `action=reserve-confirm-yes&datetime=${event.postback.params.datetime}`,
+                //             },
+                //             {
+                //                 "type": "postback",
+                //                 "label": "いいえ",
+                //                 "data": "action=reserve-confirm-no",
+                //             }
+                //         ]
+                //     }
+                // }
+                    {
+                        "type": "text",
+                        "text": `以下の日程で問題ないかな？\n${datetime}`,
+                        "quickReply": {
+                            "items": [
+                                {
+                                    "type": "action",
+                                    "action": {
+                                        "type": "postback",
+                                        "label": "はい",
+                                        "data": `action=reserve-confirm-yes&datetime=${event.postback.params.datetime}`,
+                                    }
+                                },
+                                {
+                                    "type": "action",
+                                    "action": {
+                                        "type": "postback",
+                                        "label": "いいえ",
+                                        "data": "action=reserve-confirm-no",
+                                    }
+                                }
+                            ]
+                        }
                     }
-                })
+                )
             } catch (error) {
                 console.error(error);
             }
@@ -116,7 +142,7 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
-                        text: `「${datetime}」にミーティングを予約したよ`
+                        text: `ミーティングの予約が完了したよ`
                     },
                     {
                         type: 'text',
@@ -204,7 +230,7 @@ function getNow() {
     return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
 }
 
-// 2017-12-25T01:00 → 2017年12月25日 1時00分
+// 2017-12-25T01:00 → 2017/12/25 1:00
 function formatDate(inputDate) {
     const date = new Date(inputDate);
 
