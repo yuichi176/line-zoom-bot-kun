@@ -96,7 +96,7 @@ async function handleEvent(event) {
                             {
                                 "type": "postback",
                                 "label": "はい",
-                                "data": `action=reserve-confirm-yes&datetime=${event.postback.data}`,
+                                "data": `action=reserve-confirm-yes&datetime=${event.postback.params.datetime}`,
                             },
                             {
                                 "type": "postback",
