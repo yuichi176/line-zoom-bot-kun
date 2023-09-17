@@ -18,10 +18,20 @@ const ZoomClientSecret = process.env.ZOOM_CLIENT_SECRET
 
 const app = express();
 
+// Middleware
+app.use('/linewebhook', line.middleware(config))
+app.use('/message', express.json())
+app.use('/message', express.urlencoded({ extended: true }));
+
 // Routing
-app.post('/linewebhook', line.middleware(config), (req, res) => {
+app.post('/linewebhook',(req, res) => {
     Promise
         .all(req.body.events.map(handleEvent))
+        .then((result) => res.json(result));
+});
+
+app.post('/message', (req, res) => {
+    handlePushMessage(req.body.to, req.body.messages)
         .then((result) => res.json(result));
 });
 
@@ -88,7 +98,7 @@ async function handleEvent(event) {
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#confirm
                 return client.replyMessage(event.replyToken, {
                     "type": "text",
-                    "text": `以下の日程で問題ないかな？\n${datetime}`,
+                    "text": `以下の日時で問題ないかな？\n${datetime}`,
                     "quickReply": {
                         "items": [
                             {
@@ -145,6 +155,16 @@ async function handleEvent(event) {
             return Promise.resolve(null);
         }
     } else {
+        return Promise.resolve(null);
+    }
+}
+
+async function handlePushMessage(to, messages) {
+    try {
+        // Send push message
+        // API Reference: https://developers.line.biz/ja/reference/messaging-api/#send-push-message
+        return client.pushMessage(to, messages)
+    } catch (error) {
         return Promise.resolve(null);
     }
 }
