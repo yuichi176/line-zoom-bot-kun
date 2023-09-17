@@ -28,8 +28,7 @@ app.post('/linewebhook', line.middleware(config), (req, res) => {
 async function handleEvent(event) {
     console.log(`event: ${JSON.stringify(event)}`)
 
-    const text = event.message.text.trim()
-    if (event.type === 'message' && event.message.type === 'text' && isZoom(text)) {
+    if (event.type === 'message' && event.message.type === 'text' && isZoom(event.message.text)) {
         try {
             // Issue Zoom token
             const token = await issueZoomToken()
@@ -49,7 +48,7 @@ async function handleEvent(event) {
         } catch (error) {
             console.error(error);
         }
-    } else if (event.type === 'message' && event.message.type === 'text' && isSchedule(text)) {
+    } else if (event.type === 'message' && event.message.type === 'text' && isSchedule(event.message.text)) {
         try {
             // Send datetimepicker
             // API Reference: https://developers.line.biz/ja/reference/messaging-api/#template-messages
@@ -78,7 +77,18 @@ async function handleEvent(event) {
         }
     } else if (event.type === 'postback') {
         console.log(`data: ${event.postback.data}`);
-        console.log(`params: ${JSON.stringify(event.postback.data)}`);
+        console.log(`params: ${JSON.stringify(event.postback.params)}`);
+        // Send Reply message
+        return client.replyMessage(event.replyToken, [
+            {
+                type: 'text',
+                text: "以下の日時にzoomのurlを送るね"
+            },
+            {
+                type: 'text',
+                text: event.postback.params.datetime
+            }
+        ]);
     } else {
         return Promise.resolve(null);
     }
@@ -147,10 +157,10 @@ function getNow() {
 
 function isZoom(text) {
     const regex = /zoom/i;
-    return regex.test(text);
+    return regex.test(text.trim());
 }
 
 function  isSchedule(text) {
     const regex = /次回/;
-    return regex.test(text);
+    return regex.test(text.trim());
 }
