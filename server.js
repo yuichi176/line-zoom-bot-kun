@@ -116,11 +116,11 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
-                        text: `ミーティングを予約したよ\n${datetime}`
+                        text: `「${datetime}」にミーティングを予約したよ`
                     },
                     {
                         type: 'text',
-                        text: `当日お知らせするね`
+                        text: `時間が来たらお知らせするね`
                     }
                 ]);
             } catch (error) {
