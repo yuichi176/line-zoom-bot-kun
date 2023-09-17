@@ -88,13 +88,11 @@ async function handleEvent(event) {
                             "type": "postback",
                             "label": "はい",
                             "data": `action=reserve-confirm-yes&datetime=${event.postback.data}`,
-                            "displayText": "はい",
                         },
                         {
                             "type": "postback",
                             "label": "いいえ",
                             "data": "action=reserve-confirm-no",
-                            "displayText": "いいえ",
                         }
                     ]
                 }
