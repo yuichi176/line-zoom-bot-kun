@@ -86,52 +86,32 @@ async function handleEvent(event) {
             try {
                 // Send Reply message
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#confirm
-                return client.replyMessage(event.replyToken,
-                //     {
-                //     "type": "template",
-                //     "altText": "this is a confirm template for zoom meeting reservation",
-                //     "template": {
-                //         "type": "confirm",
-                //         "text": `以下の日程で問題ないかな？\n${datetime}`,
-                //         "actions": [
-                //             {
-                //                 "type": "postback",
-                //                 "label": "はい",
-                //                 "data": `action=reserve-confirm-yes&datetime=${event.postback.params.datetime}`,
-                //             },
-                //             {
-                //                 "type": "postback",
-                //                 "label": "いいえ",
-                //                 "data": "action=reserve-confirm-no",
-                //             }
-                //         ]
-                //     }
-                // }
-                    {
-                        "type": "text",
-                        "text": `以下の日程で問題ないかな？\n${datetime}`,
-                        "quickReply": {
-                            "items": [
-                                {
-                                    "type": "action",
-                                    "action": {
-                                        "type": "postback",
-                                        "label": "はい",
-                                        "data": `action=reserve-confirm-yes&datetime=${event.postback.params.datetime}`,
-                                    }
-                                },
-                                {
-                                    "type": "action",
-                                    "action": {
-                                        "type": "postback",
-                                        "label": "いいえ",
-                                        "data": "action=reserve-confirm-no",
-                                    }
+                return client.replyMessage(event.replyToken, {
+                    "type": "text",
+                    "text": `以下の日程で問題ないかな？\n${datetime}`,
+                    "quickReply": {
+                        "items": [
+                            {
+                                "type": "action",
+                                "action": {
+                                    "type": "postback",
+                                    "label": "はい",
+                                    "displayText": "はい",
+                                    "data": `action=reserve-confirm-yes&datetime=${event.postback.params.datetime}`,
                                 }
-                            ]
-                        }
+                            },
+                            {
+                                "type": "action",
+                                "action": {
+                                    "type": "postback",
+                                    "label": "いいえ",
+                                    "displayText": "いいえ",
+                                    "data": "action=reserve-confirm-no",
+                                }
+                            }
+                        ]
                     }
-                )
+                })
             } catch (error) {
                 console.error(error);
             }
