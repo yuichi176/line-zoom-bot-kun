@@ -48,7 +48,7 @@ async function handleEvent(event) {
         } catch (error) {
             console.error(error);
         }
-    } else if (event.type === 'message' && event.message.type === 'text' && isSchedule(event.message.text)) {
+    } else if (event.type === 'message' && event.message.type === 'text' && isReserve(event.message.text)) {
         try {
             // Send datetimepicker
             // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
@@ -84,15 +84,25 @@ async function handleEvent(event) {
                     "type": "confirm",
                     "text": `${datetime} で問題ないかな?`,
                     "actions": [
+                        // {
+                        //     "type": "postback",
+                        //     "label": "はい",
+                        //     "data": `action=reserve-confirm-yes&datetime=${event.postback.data}`,
+                        // },
+                        // {
+                        //     "type": "postback",
+                        //     "label": "いいえ",
+                        //     "data": "action=reserve-confirm-no",
+                        // }
                         {
-                            "type": "postback",
+                            "type": "message",
                             "label": "はい",
-                            "data": `action=reserve-confirm-yes&datetime=${event.postback.data}`,
+                            "text": "はい"
                         },
                         {
-                            "type": "postback",
+                            "type": "message",
                             "label": "いいえ",
-                            "data": "action=reserve-confirm-no",
+                            "text": "いいえ"
                         }
                     ]
                 }
@@ -187,7 +197,7 @@ function isZoom(text) {
     return regex.test(text.trim());
 }
 
-function  isSchedule(text) {
+function  isReserve(text) {
     const regex = /次回/;
     return regex.test(text.trim());
 }
