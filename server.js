@@ -264,7 +264,7 @@ function parseData(inputString) {
 }
 
 function isZoom(text) {
-    const regex = /\bzoo\b/i;
+    const regex = /\bzoom\b/i;
     return regex.test(text.trim());
 }
 
