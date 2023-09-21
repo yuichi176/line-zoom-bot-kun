@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const line = require('@line/bot-sdk');
+const Firestore = require('@google-cloud/firestore');
 const axios = require("axios");
 
 // LINE Secret
@@ -9,12 +10,22 @@ const config = {
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
     channelSecret: process.env.LINE_CHANNEL_SECRET,
 };
+// Create a LINE Messaging API client
 const client = new line.Client(config);
 
 // ZOOM Secret
 const ZoomAccountId =  process.env.ZOOM_ACCOUNT_ID
 const ZoomClientId = process.env.ZOOM_CLIENT_ID
 const ZoomClientSecret = process.env.ZOOM_CLIENT_SECRET
+
+// GCP Secret
+const GoogleApplicationCredentialPath = process.env.GOOGLE_APPLICATION_CREDENTIAL_PATH
+const GCPProjectId = process.env.GCP_PROJECT_ID
+// Create a firestore client
+const db = new Firestore({
+    projectId: GCPProjectId,
+    keyFilename: GoogleApplicationCredentialPath,
+});
 
 const app = express();
 
@@ -47,7 +58,7 @@ async function handleEvent(event) {
                 // Issue Zoom token
                 const token = await issueZoomToken()
                 // Create a meeting url
-                const meetingUrl = await createZoomMeeting(token)
+                const meetingUrl = await createZoomMeeting(token, getNow())
                 // Send Reply message
                 return client.replyMessage(event.replyToken, [
                     {
@@ -126,9 +137,28 @@ async function handleEvent(event) {
                 console.error(error);
             }
         } else if (data.action === 'reserve-confirm-yes') {
-            // TODO: impl
-            const datetime = formatDate(data.datetime)
+            const destination = event.source.groupId || event.source.userId || event.source.roomId
+            const datetime = data.datetime
+            const formattedDatetime = formatDate(datetime)
+
             try {
+                // Issue Zoom token
+                const token = await issueZoomToken()
+                // Create a meeting url
+                const meetingUrl = await createZoomMeeting(token, datetime)
+
+                // save meeting info to firestore
+                const docRef = db.collection('destinations').doc(destination).collection('meetings').doc(datetime)
+                await docRef.set({
+                    startDatetime: datetime,
+                    zoomUrl: meetingUrl,
+                    isCancelled: false,
+                    isNotified: false,
+                })
+                console.log(`success save meeting to firestore: ${destination}:${datetime}`)
+
+                // TODO: call schedule api
+
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
@@ -170,7 +200,9 @@ async function handlePushMessage(to, messages) {
     }
 }
 
-app.listen(process.env.PORT);
+app.listen(process.env.PORT, () => {
+    console.log(`express server listening on port ${process.env.PORT}`);
+});
 
 // Issue Zoom token
 // API Reference: https://developers.zoom.us/docs/internal-apps/s2s-oauth/
@@ -191,8 +223,7 @@ async function issueZoomToken() {
 
 // Create a meeting url
 // API Reference: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingCreate
-async function createZoomMeeting(token) {
-    const now = getNow()
+async function createZoomMeeting(token, datetime) {
     try {
         const mtgResponse = await axios({
             method: 'post',
@@ -201,7 +232,7 @@ async function createZoomMeeting(token) {
             data: {
                 'topic': 'people meeting',
                 "type": "1", // 1:Daily, 2:Weekly, 3:Monthly
-                "start_time": now,
+                "start_time": datetime,
                 'timezone': 'Asia/Tokyo',
                 'settings': {
                     "waiting_room": false,
@@ -228,7 +259,7 @@ function getNow() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
 
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`;
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 // 2017-12-25T01:00 → 2017/12/25 1:00
