@@ -35,7 +35,7 @@ app.post('/message', (req, res) => {
         .then((result) => res.json(result));
 });
 
-// Event Handler
+// Handler
 async function handleEvent(event) {
     console.log(`event: ${JSON.stringify(event)}`)
 
@@ -160,6 +160,7 @@ async function handleEvent(event) {
 }
 
 async function handlePushMessage(to, messages) {
+    console.log(`Push message to ${to}: ${messages}`)
     try {
         // Send push message
         // API Reference: https://developers.line.biz/ja/reference/messaging-api/#send-push-message
@@ -263,7 +264,7 @@ function parseData(inputString) {
 }
 
 function isZoom(text) {
-    const regex = /zoom/i;
+    const regex = /\bzoo\b/i;
     return regex.test(text.trim());
 }
 
