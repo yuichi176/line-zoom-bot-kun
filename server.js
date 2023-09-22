@@ -36,7 +36,11 @@ app.use('/linewebhook', line.middleware(config))
 app.post('/linewebhook',(req, res) => {
     Promise
         .all(req.body.events.map(handleEvent))
-        .then((result) => res.json(result));
+        .then((result) => res.json(result)
+        .catch((error) => {
+            console.error(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }));
 });
 
 // Handler
@@ -65,6 +69,7 @@ async function handleEvent(event) {
                 ]);
             } catch (error) {
                 console.error(error);
+                throw error
             }
         } else if (messageType === 'text' && isReserve(text)) {
             try {
@@ -89,6 +94,7 @@ async function handleEvent(event) {
                 });
             } catch (error) {
                 console.error(error);
+                throw error
             }
         } else {
             return Promise.resolve(null);
@@ -128,6 +134,7 @@ async function handleEvent(event) {
                 })
             } catch (error) {
                 console.error(error);
+                throw error
             }
         } else if (data.action === 'reserve-confirm-yes') {
             const destination = event.source.groupId || event.source.userId || event.source.roomId
@@ -165,6 +172,7 @@ async function handleEvent(event) {
                 ]);
             } catch (error) {
                 console.error(error);
+                throw error
             }
         } else if (data.action === 'reserve-confirm-no') {
             try {
@@ -174,6 +182,7 @@ async function handleEvent(event) {
                     });
             } catch (error) {
                 console.error(error);
+                throw error
             }
         } else {
             return Promise.resolve(null);
