@@ -156,7 +156,7 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
-                        text: `ミーティングの予約が完了したよ`
+                        text: `✅ミーティングの予約が完了したよ`
                     },
                     {
                         type: 'text',
@@ -283,6 +283,6 @@ function isZoom(text) {
 }
 
 function  isReserve(text) {
-    const regex = /次回/;
+    const regex = /^zoom予約$/i;
     return regex.test(text.trim());
 }
