@@ -36,11 +36,11 @@ app.use('/linewebhook', line.middleware(config))
 app.post('/linewebhook',(req, res) => {
     Promise
         .all(req.body.events.map(handleEvent))
-        .then((result) => res.json(result)
+        .then((result) => res.json(result))
         .catch((error) => {
             console.error(error);
             res.status(500).json({ error: 'Internal Server Error' });
-        }));
+        });
 });
 
 // Handler
@@ -158,7 +158,6 @@ async function handleEvent(event) {
                 console.log(`success save meeting to firestore: ${destination}:${datetime}`)
 
                 // TODO: call schedule api
-
 
                 return client.replyMessage(event.replyToken, [
                     {
