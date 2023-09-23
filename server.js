@@ -260,7 +260,7 @@ async function createHttpTask(destination, datetime, meetingUrl) {
 
     // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
     const task = {
-        name: `${destination}:${datetime}`,
+        name: `projects/${GCPProjectId}/locations/${location}/queues/${queue}/tasks/${destination}-${datetime}`,
         scheduleTime: {
             seconds: epocTime
         },
