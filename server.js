@@ -261,10 +261,11 @@ async function createHttpTask(destination, datetime, meetingUrl) {
     // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
     const task = {
         name: `projects/${GCPProjectId}/locations/${location}/queues/${queue}/tasks/${destination}-${datetime.replace(":", "-")}`,
-        scheduleTime: {
-            // seconds: epocTime
-            seconds: parseInt("180") + Date.now() / 1000,
-        },
+        scheduleTime: zuleDateTime,
+        // scheduleTime: {
+        //     // seconds: epocTime
+        //     seconds: parseInt("180") + Date.now() / 1000,
+        // },
         // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#HttpRequest
         httpRequest: {
             url: 'https://line-zoom-bot-kun-notifier-wk4o5s7qsq-an.a.run.app/message',
