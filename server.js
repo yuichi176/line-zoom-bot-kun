@@ -260,7 +260,7 @@ async function createHttpTask(destination, datetime, meetingUrl) {
 
     // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
     const task = {
-        name: `projects/${GCPProjectId}/locations/${location}/queues/${queue}/tasks/${destination}-${datetime}`,
+        name: `projects/${GCPProjectId}/locations/${location}/queues/${queue}/tasks/${destination}-${datetime.replace(":", "-")}`,
         scheduleTime: {
             seconds: epocTime
         },
@@ -276,8 +276,7 @@ async function createHttpTask(destination, datetime, meetingUrl) {
     };
 
     // Send create task request.
-    console.log('Send create task request:');
-    console.log(task);
+    console.log(`Send create task request: ${JSON.stringify(task)}`);
     const request = {parent: parent, task: task};
     const [response] = await cloudTasksClient.createTask(request);
     console.log(`Success create task: ${response.name}`);
