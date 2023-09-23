@@ -256,12 +256,14 @@ async function createHttpTask(destination, datetime, meetingUrl) {
     };
     const payload = JSON.stringify(jsonData);
     const zuleDateTime = new Date(datetime).toISOString();
-    // const epocTime = Date.parse(zuleDateTime)
+    const epocTime = Date.parse(zuleDateTime)
 
     // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
     const task = {
         name: `${destination}:${datetime}`,
-        scheduleTime: zuleDateTime,
+        scheduleTime: {
+            seconds: epocTime
+        },
         // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#HttpRequest
         httpRequest: {
             url: 'https://line-zoom-bot-kun-notifier-wk4o5s7qsq-an.a.run.app/message',
