@@ -247,7 +247,7 @@ async function createZoomMeeting(token, datetime) {
 async function createHttpTask(destination, datetime, meetingUrl) {
     const location = 'asia-northeast1';
     const queue = 'line-notify-queue';
-    const parent = cloudTasksClient.queuePath(process.env.GCP_PROJECT_ID, location, queue);
+    const parent = cloudTasksClient.queuePath(GCPProjectId, location, queue);
 
     const jsonData = {
         "destination": destination,
