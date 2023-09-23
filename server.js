@@ -3,6 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const line = require('@line/bot-sdk');
 const Firestore = require('@google-cloud/firestore');
+const { CloudTasksClient } = require('@google-cloud/tasks');
 const axios = require("axios");
 
 // LINE Secret
@@ -26,6 +27,8 @@ const db = new Firestore({
     projectId: GCPProjectId,
     keyFilename: GoogleApplicationCredentialPath,
 });
+// Create a Cloud Tasks client
+const cloudTasksClient = new CloudTasksClient();
 
 const app = express();
 
@@ -139,7 +142,6 @@ async function handleEvent(event) {
         } else if (data.action === 'reserve-confirm-yes') {
             const destination = event.source.groupId || event.source.userId || event.source.roomId
             const datetime = data.datetime
-            const formattedDatetime = formatDate(datetime)
 
             try {
                 // Issue Zoom token
@@ -147,7 +149,7 @@ async function handleEvent(event) {
                 // Create a meeting url
                 const meetingUrl = await createZoomMeeting(token, datetime)
 
-                // save meeting info to firestore
+                // Save meeting info to firestore
                 const docRef = db.collection('destinations').doc(destination).collection('meetings').doc(datetime)
                 await docRef.set({
                     startDatetime: datetime,
@@ -155,9 +157,10 @@ async function handleEvent(event) {
                     isCancelled: false,
                     isNotified: false,
                 })
-                console.log(`success save meeting to firestore: ${destination}:${datetime}`)
+                console.log(`success save meeting: ${destination}:${datetime}`)
 
-                // TODO: call schedule api
+                // Create Cloud Tasks task
+                await createHttpTask(destination, datetime, meetingUrl)
 
                 return client.replyMessage(event.replyToken, [
                     {
@@ -238,6 +241,44 @@ async function createZoomMeeting(token, datetime) {
         console.error('Fail to create mtg url:', error);
         throw error;
     }
+}
+
+// Create Cloud Tasks task
+async function createHttpTask(destination, datetime, meetingUrl) {
+    const location = 'asia-northeast1';
+    const queue = 'line-notify-queue';
+    const parent = cloudTasksClient.queuePath(GCPProjectId, location, queue);
+
+    const jsonData = {
+        "destination": destination,
+        "datetime": datetime,
+        "zoomUrl": meetingUrl
+    };
+    const payload = JSON.stringify(jsonData);
+    const zuleDateTime = new Date(datetime).toISOString();
+    // const epocTime = Date.parse(zuleDateTime)
+
+    // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
+    const task = {
+        name: `${destination}:${datetime}`,
+        scheduleTime: zuleDateTime,
+        // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#HttpRequest
+        httpRequest: {
+            url: 'https://line-zoom-bot-kun-notifier-wk4o5s7qsq-an.a.run.app/message',
+            httpMethod: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: Buffer.from(payload).toString('base64')
+        },
+    };
+
+    // Send create task request.
+    console.log('Send create task request:');
+    console.log(task);
+    const request = {parent: parent, task: task};
+    const [response] = await cloudTasksClient.createTask(request);
+    console.log(`Success create task: ${response.name}`);
 }
 
 function getNow() {
