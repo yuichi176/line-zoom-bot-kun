@@ -83,6 +83,8 @@ async function handleEvent(event) {
 
                 const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
                 const min = currentDate.toISOString().replace("T", "t").slice(0, 16)
+                console.log(currentDate)
+                console.log(max)
 
                 // Send datetimepicker
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
