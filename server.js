@@ -77,10 +77,10 @@ async function handleEvent(event) {
         } else if (messageType === 'text' && isReserve(text)) {
             try {
                 const currentDate = new Date()
-                currentDate.setHours(currentDate.getHours() - 9)
+                currentDate.setHours(currentDate.getHours() + 9)
 
                 const oneMonthLater = new Date()
-                currentDate.setHours(oneMonthLater.getHours() - 9)
+                currentDate.setHours(oneMonthLater.getHours() + 9)
                 oneMonthLater.setMonth(oneMonthLater.getMonth() + 1)
                 oneMonthLater.setDate(oneMonthLater.getDate() - 1)
 
