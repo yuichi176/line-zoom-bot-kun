@@ -255,16 +255,16 @@ async function createHttpTask(destination, datetime, meetingUrl) {
         "zoomUrl": meetingUrl
     };
     const payload = JSON.stringify(jsonData);
+
     const zuleDateTime = new Date(datetime).toISOString();
     const epocTime = Date.parse(zuleDateTime)
-    console.log(zuleDateTime)
-    console.log(epocTime)
+    const scheduleEpocTime = (epocTime / 1000) - (9 * 60 * 60 * 1000)
 
     // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
     const task = {
         name: `projects/${GCPProjectId}/locations/${location}/queues/${queue}/tasks/${destination}-${datetime.replace(":", "-")}`,
         scheduleTime: {
-            seconds: epocTime / 1000
+            seconds: scheduleEpocTime
         },
         // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#HttpRequest
         httpRequest: {
