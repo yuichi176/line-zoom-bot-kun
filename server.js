@@ -257,6 +257,8 @@ async function createHttpTask(destination, datetime, meetingUrl) {
     const payload = JSON.stringify(jsonData);
     const zuleDateTime = new Date(datetime).toISOString();
     const epocTime = Date.parse(zuleDateTime)
+    console.log(zuleDateTime)
+    console.log(epocTime)
 
     // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
     const task = {
