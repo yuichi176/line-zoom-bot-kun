@@ -258,7 +258,7 @@ async function createHttpTask(destination, datetime, meetingUrl) {
 
     const zuleDateTime = new Date(datetime).toISOString();
     const epocTime = Date.parse(zuleDateTime)
-    const scheduleEpocTime = (epocTime / 1000) - (9 * 60 * 60 * 1000)
+    const scheduleEpocTime = (epocTime - (9 * 60 * 60 * 1000)) / 1000
 
     // Object Reference: https://cloud.google.com/tasks/docs/reference/rest/v2/projects.locations.queues.tasks#Task
     const task = {
