@@ -77,14 +77,15 @@ async function handleEvent(event) {
         } else if (messageType === 'text' && isReserve(text)) {
             try {
                 const currentDate = new Date()
+                currentDate.setHours(currentDate.getHours() - 9)
+
                 const oneMonthLater = new Date()
-                oneMonthLater.setMonth(currentDate.getMonth() + 1)
+                currentDate.setHours(oneMonthLater.getHours() - 9)
+                oneMonthLater.setMonth(oneMonthLater.getMonth() + 1)
                 oneMonthLater.setDate(oneMonthLater.getDate() - 1)
 
                 const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
                 const min = currentDate.toISOString().replace("T", "t").slice(0, 16)
-                console.log(currentDate)
-                console.log(max)
 
                 // Send datetimepicker
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
