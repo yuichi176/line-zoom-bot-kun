@@ -76,6 +76,14 @@ async function handleEvent(event) {
             }
         } else if (messageType === 'text' && isReserve(text)) {
             try {
+                const currentDate = new Date()
+                const oneMonthLater = new Date()
+                oneMonthLater.setMonth(currentDate.getMonth() + 1)
+                oneMonthLater.setDate(oneMonthLater.getDate() - 1)
+
+                const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
+                const min = currentDate.toISOString().replace("T", "t").slice(0, 16)
+
                 // Send datetimepicker
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
                 return client.replyMessage(event.replyToken, {
@@ -85,12 +93,15 @@ async function handleEvent(event) {
                         "type": "buttons",
                         "title": "zoomミーティングの予約",
                         "text": "日時を選んでね",
+                        // Object Reference: https://developers.line.biz/ja/reference/messaging-api/#action-objects
                         "actions": [
                             {
                                 "type": "datetimepicker",
                                 "label": "日時を選択",
                                 "data": "action=reserve-zoom-meeting",
                                 "mode": "datetime",
+                                "max": max, // Cloud Tasksの制約で1ヶ月先の予約までしかできない
+                                "min": min
                             }
                         ]
                     }
