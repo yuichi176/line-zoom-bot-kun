@@ -116,15 +116,19 @@ async function handleEvent(event) {
         } else if (messageType === 'text' && isReservedList(text)) {
             try {
                 const destination = event.source.groupId || event.source.userId || event.source.roomId
+
                 const collectionRef = db.collection('destinations').doc(destination).collection('meetings')
                 const snapshot = await collectionRef.get();
+                let dateList = ""
                 snapshot.forEach(doc => {
-                    console.log(doc.id, '=>', doc.data());
+                    if (doc.data().isCancelled == false && doc.data().isNotified == false) {
+                        dateList += "\n・" + formatDate(doc.id)
+                    }
                 });
                 return client.replyMessage(event.replyToken,
                     {
                         type: 'text',
-                        text: "・2017/12/25 1:00 \n ・2017/12/25 1:00\n ・2017/12/25 1:00"
+                        text: `現時点で以下のzoomが予約されてるよ。${dateList}`
                     },);
             } catch (error) {
                 console.error(error);
