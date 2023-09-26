@@ -121,15 +121,22 @@ async function handleEvent(event) {
                 const snapshot = await collectionRef.get();
                 let dateList = ""
                 snapshot.forEach(doc => {
-                    if (doc.data().isCancelled == false && doc.data().isNotified == false) {
+                    if (doc.data().isCancelled === false && doc.data().isNotified === false) {
                         dateList += "\n・" + formatDate(doc.id)
                     }
                 });
+                if (dateList === "") {
+                    return client.replyMessage(event.replyToken,
+                        {
+                            type: 'text',
+                            text: "現在予約されているzoomはないよ。"
+                        });
+                }
                 return client.replyMessage(event.replyToken,
                     {
                         type: 'text',
                         text: `現時点で以下のzoomが予約されてるよ。${dateList}`
-                    },);
+                    });
             } catch (error) {
                 console.error(error);
                 throw error
