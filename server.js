@@ -113,6 +113,23 @@ async function handleEvent(event) {
                 console.error(error);
                 throw error
             }
+        } else if (messageType === 'text' && isReservedList(text)) {
+            try {
+                const destination = event.source.groupId || event.source.userId || event.source.roomId
+                const collectionRef = db.collection('destinations').doc(destination).collection('meetings')
+                const snapshot = await collectionRef.get();
+                snapshot.forEach(doc => {
+                    console.log(doc.id, '=>', doc.data());
+                });
+                return client.replyMessage(event.replyToken,
+                    {
+                        type: 'text',
+                        text: "・2017/12/25 1:00 \n ・2017/12/25 1:00\n ・2017/12/25 1:00"
+                    },);
+            } catch (error) {
+                console.error(error);
+                throw error
+            }
         } else {
             return Promise.resolve(null);
         }
@@ -347,7 +364,12 @@ function isZoom(text) {
     return regex.test(text.trim());
 }
 
-function  isReserve(text) {
+function isReserve(text) {
     const regex = /^zoom予約$/i;
+    return regex.test(text.trim());
+}
+
+function  isReservedList(text) {
+    const regex = /^zoom予約確認$/i;
     return regex.test(text.trim());
 }
