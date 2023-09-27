@@ -305,7 +305,7 @@ async function handleEvent(event) {
                 if (flg === false) {
                     return client.replyMessage(event.replyToken, {
                         type: 'text',
-                        text: "その日時に予約されているミーティングはないよ。予約されているミーティングを確認するには「zoom予約確認」って話しかけてね。"
+                        text: "その日時に予約されているミーティングはないよ。\n予約されているミーティングを確認するには「zoom予約確認」って話しかけてね。"
                     });
                 }
 
@@ -349,8 +349,8 @@ async function handleEvent(event) {
                 const docRef = db.collection('destinations').doc(destination).collection('meetings').doc(datetime)
                 const doc = await docRef.get()
                 await docRef.set({
-                    startDatetime: doc.data().datetime,
-                    zoomUrl: doc.data().meetingUrl,
+                    startDatetime: doc.data().startDatetime,
+                    zoomUrl: doc.data().zoomUrl,
                     isCancelled: true,
                     isNotified: false,
                 })
