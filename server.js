@@ -76,10 +76,11 @@ async function handleEvent(event) {
             }
         } else if (messageType === 'text' && isReserve(text)) {
             try {
+                // ミーティングの予約上限のチェック（最大3件まで）
                 const destination = event.source.groupId || event.source.userId || event.source.roomId
                 const collectionRef = db.collection('destinations').doc(destination).collection('meetings')
                 const snapshot = await collectionRef.get()
-                let count = 0 // 予約カウント
+                let count = 0
                 let dateList = ""
                 snapshot.forEach(doc => {
                     if (doc.data().isCancelled === false && doc.data().isNotified === false) {
@@ -87,7 +88,7 @@ async function handleEvent(event) {
                         count += 1
                     }
                 });
-                if (count >= 3) { // 予約可能なミーティングは最大で3件まで
+                if (count >= 3) {
                     return client.replyMessage(event.replyToken, [
                         {
                             type: 'text',
@@ -102,15 +103,12 @@ async function handleEvent(event) {
 
                 const currentDate = new Date()
                 currentDate.setHours(currentDate.getHours() + 9)
-
                 const oneMonthLater = new Date()
                 currentDate.setHours(oneMonthLater.getHours() + 9)
                 oneMonthLater.setMonth(oneMonthLater.getMonth() + 1)
                 oneMonthLater.setDate(oneMonthLater.getDate() - 1)
-
                 const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
                 const min = currentDate.toISOString().replace("T", "t").slice(0, 16)
-
                 // Send datetimepicker
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
                 return client.replyMessage(event.replyToken, {
@@ -119,7 +117,7 @@ async function handleEvent(event) {
                     "template": {
                         "type": "buttons",
                         "title": "zoomミーティングの予約",
-                        "text": "日時を選んでね",
+                        "text": "予約する日時を選んでね",
                         // Object Reference: https://developers.line.biz/ja/reference/messaging-api/#action-objects
                         "actions": [
                             {
@@ -164,6 +162,43 @@ async function handleEvent(event) {
                 console.error(error);
                 throw error
             }
+        } else if (messageType === 'text' && isCancel(text)) {
+            try {
+                const currentDate = new Date()
+                currentDate.setHours(currentDate.getHours() + 9)
+                const oneMonthLater = new Date()
+                currentDate.setHours(oneMonthLater.getHours() + 9)
+                oneMonthLater.setMonth(oneMonthLater.getMonth() + 1)
+                oneMonthLater.setDate(oneMonthLater.getDate() - 1)
+                const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
+                const min = currentDate.toISOString().replace("T", "t").slice(0, 16)
+
+                // Send datetimepicker
+                // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
+                return client.replyMessage(event.replyToken, {
+                    "type": "template",
+                    "altText": "This is a datetime_picker for zoom meeting",
+                    "template": {
+                        "type": "buttons",
+                        "title": "zoomミーティングのキャンセル",
+                        "text": "キャンセルする日時を選んでね",
+                        // Object Reference: https://developers.line.biz/ja/reference/messaging-api/#action-objects
+                        "actions": [
+                            {
+                                "type": "datetimepicker",
+                                "label": "日時を選択",
+                                "data": "action=cancel-zoom-meeting",
+                                "mode": "datetime",
+                                "max": max,
+                                "min": min
+                            }
+                        ]
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                throw error
+            }
         } else {
             return Promise.resolve(null);
         }
@@ -176,7 +211,7 @@ async function handleEvent(event) {
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#confirm
                 return client.replyMessage(event.replyToken, {
                     "type": "text",
-                    "text": `以下の日時で問題ないかな？\n${datetime}`,
+                    "text": `以下の日時で予約して問題ないかな？\n${datetime}`,
                     "quickReply": {
                         "items": [
                             {
@@ -247,6 +282,97 @@ async function handleEvent(event) {
                         type: 'text',
                         text: "ミーティングの予約を中止したよ"
                     });
+            } catch (error) {
+                console.error(error);
+                throw error
+            }
+        } else if (data.action === 'cancel-zoom-meeting') {
+            const destination = event.source.groupId || event.source.userId || event.source.roomId
+            const datetime = data.datetime
+            const formattedDatetime = formatDate(event.postback.params.datetime)
+            try {
+                // キャンセル対象のミーティングがあるか確認
+                const collectionRef = db.collection('destinations').doc(destination).collection('meetings')
+                const snapshot = await collectionRef.get();
+                let flg = false
+                snapshot.forEach(doc => {
+                    if (doc.data().isCancelled === false && doc.data().isNotified === false) {
+                        if (doc.id === datetime) {
+                            flg = true
+                        }
+                    }
+                });
+                if (flg === false) {
+                    return client.replyMessage(event.replyToken, {
+                        type: 'text',
+                        text: "その日時に予約されているミーティングはないよ。予約されているミーティングを確認するには「zoom予約確認」って話しかけてね。"
+                    });
+                }
+
+                // Send Reply message
+                // API Reference: https://developers.line.biz/ja/reference/messaging-api/#confirm
+                return client.replyMessage(event.replyToken, {
+                    "type": "text",
+                    "text": `以下の日時をキャンセルして問題ないかな？\n${formattedDatetime}`,
+                    "quickReply": {
+                        "items": [
+                            {
+                                "type": "action",
+                                "action": {
+                                    "type": "postback",
+                                    "label": "はい",
+                                    "displayText": "はい",
+                                    "data": `action=cancel-confirm-yes&datetime=${event.postback.params.datetime}`,
+                                }
+                            },
+                            {
+                                "type": "action",
+                                "action": {
+                                    "type": "postback",
+                                    "label": "いいえ",
+                                    "displayText": "いいえ",
+                                    "data": "action=cancel-confirm-no",
+                                }
+                            }
+                        ]
+                    }
+                })
+            } catch (error) {
+                console.error(error);
+                throw error
+            }
+        } else if (data.action === 'cancel-confirm-yes') {
+            const destination = event.source.groupId || event.source.userId || event.source.roomId
+            const datetime = data.datetime
+            try {
+                // Update cancel status
+                const docRef = db.collection('destinations').doc(destination).collection('meetings').doc(datetime)
+                const doc = await docRef.get()
+                await docRef.set({
+                    startDatetime: doc.data().datetime,
+                    zoomUrl: doc.data().meetingUrl,
+                    isCancelled: true,
+                    isNotified: false,
+                })
+                console.log(`success update cancel status: ${destination}:${datetime}`)
+
+                // Delete Cloud Tasks task
+                await deleteTask(destination, datetime)
+
+                return client.replyMessage(event.replyToken, {
+                        type: 'text',
+                        text: `✅ミーティングのキャンセルが完了したよ`
+                    });
+            } catch (error) {
+                console.error(error);
+                throw error
+            }
+        } else if (data.action === 'cancel-confirm-no') {
+            try {
+                return client.replyMessage(event.replyToken, {
+                    type: 'text',
+                    text: "ミーティングのキャンセルを中止したよ"
+                });
             } catch (error) {
                 console.error(error);
                 throw error
@@ -348,6 +474,15 @@ async function createHttpTask(destination, datetime, meetingUrl) {
     console.log(`Success create task: ${response.name}`);
 }
 
+// Delete Cloud Tasks task
+async function deleteTask(destination, datetime) {
+    const location = 'asia-northeast1';
+    const queue = 'line-notify-queue';
+
+    const response = await cloudTasksClient.deleteTask({name: `projects/${GCPProjectId}/locations/${location}/queues/${queue}/tasks/${destination}-${datetime.replace(":", "-")}`})
+    console.log(`Success delete task: ${response}`);
+}
+
 function getNow() {
     const now = new Date();
 
@@ -405,5 +540,10 @@ function isReserve(text) {
 
 function  isReservedList(text) {
     const regex = /^zoom予約確認$/i;
+    return regex.test(text.trim());
+}
+
+function isCancel(text) {
+    const regex = /^zoomキャンセル$/i;
     return regex.test(text.trim());
 }
