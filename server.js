@@ -76,6 +76,30 @@ async function handleEvent(event) {
             }
         } else if (messageType === 'text' && isReserve(text)) {
             try {
+                const destination = event.source.groupId || event.source.userId || event.source.roomId
+                const collectionRef = db.collection('destinations').doc(destination).collection('meetings')
+                const snapshot = await collectionRef.get()
+                let count = 0 // 予約カウント
+                let dateList = ""
+                snapshot.forEach(doc => {
+                    if (doc.data().isCancelled === false && doc.data().isNotified === false) {
+                        dateList += "\n・" + formatDate(doc.id)
+                        count += 1
+                    }
+                });
+                if (count >= 3) { // 予約可能なミーティングは最大で3件まで
+                    return client.replyMessage(event.replyToken, [
+                        {
+                            type: 'text',
+                            text: `予約数が上限に達しているよ。新しく予約するには以下のいずれかの予約をキャンセルする必要があるよ。${dateList}`
+                        },
+                        {
+                            type: 'text',
+                            text: "キャンセルするときは「zoomキャンセル」って話しかけてね。"
+                        }
+                    ]);
+                }
+
                 const currentDate = new Date()
                 currentDate.setHours(currentDate.getHours() + 9)
 
@@ -116,7 +140,6 @@ async function handleEvent(event) {
         } else if (messageType === 'text' && isReservedList(text)) {
             try {
                 const destination = event.source.groupId || event.source.userId || event.source.roomId
-
                 const collectionRef = db.collection('destinations').doc(destination).collection('meetings')
                 const snapshot = await collectionRef.get();
                 let dateList = ""
@@ -135,7 +158,7 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken,
                     {
                         type: 'text',
-                        text: `現時点で以下のzoomが予約されてるよ。${dateList}`
+                        text: `以下が現在予約されているzoomだよ。${dateList}`
                     });
             } catch (error) {
                 console.error(error);
