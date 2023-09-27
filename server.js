@@ -150,13 +150,13 @@ async function handleEvent(event) {
                     return client.replyMessage(event.replyToken,
                         {
                             type: 'text',
-                            text: "現在予約されているzoomはないよ。"
+                            text: "予約されているzoomはないよ。"
                         });
                 }
                 return client.replyMessage(event.replyToken,
                     {
                         type: 'text',
-                        text: `以下が現在予約されているzoomだよ。${dateList}`
+                        text: `以下の日時で予約されているよ。${dateList}`
                     });
             } catch (error) {
                 console.error(error);
@@ -288,7 +288,7 @@ async function handleEvent(event) {
             }
         } else if (data.action === 'cancel-zoom-meeting') {
             const destination = event.source.groupId || event.source.userId || event.source.roomId
-            const datetime = data.datetime
+            const datetime = event.postback.params.datetime
             const formattedDatetime = formatDate(event.postback.params.datetime)
             try {
                 // キャンセル対象のミーティングがあるか確認
@@ -322,7 +322,7 @@ async function handleEvent(event) {
                                     "type": "postback",
                                     "label": "はい",
                                     "displayText": "はい",
-                                    "data": `action=cancel-confirm-yes&datetime=${event.postback.params.datetime}`,
+                                    "data": `action=cancel-confirm-yes&datetime=${datetime}`,
                                 }
                             },
                             {
