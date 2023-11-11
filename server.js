@@ -102,15 +102,13 @@ async function handleEvent(event) {
                 }
 
                 const currentDate = new Date()
-                currentDate.setHours(currentDate.getHours() + 9)
+                currentDate.setHours(currentDate.getHours())
                 const oneMonthLater = new Date()
-                currentDate.setHours(oneMonthLater.getHours() + 9)
+                currentDate.setHours(oneMonthLater.getHours())
                 oneMonthLater.setMonth(oneMonthLater.getMonth() + 1)
                 oneMonthLater.setDate(oneMonthLater.getDate() - 1)
                 const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
                 const min = currentDate.toISOString().replace("T", "t").slice(0, 16)
-                console.log(`min: ${min}`)
-                console.log(`max: ${max}`)
                 // Send datetimepicker
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
                 return client.replyMessage(event.replyToken, {
@@ -167,9 +165,9 @@ async function handleEvent(event) {
         } else if (messageType === 'text' && isCancel(text)) {
             try {
                 const currentDate = new Date()
-                currentDate.setHours(currentDate.getHours() + 9)
+                currentDate.setHours(currentDate.getHours())
                 const oneMonthLater = new Date()
-                currentDate.setHours(oneMonthLater.getHours() + 9)
+                currentDate.setHours(oneMonthLater.getHours())
                 oneMonthLater.setMonth(oneMonthLater.getMonth() + 1)
                 oneMonthLater.setDate(oneMonthLater.getDate() - 1)
                 const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
