@@ -109,6 +109,8 @@ async function handleEvent(event) {
                 oneMonthLater.setDate(oneMonthLater.getDate() - 1)
                 const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16)
                 const min = currentDate.toISOString().replace("T", "t").slice(0, 16)
+                console.log(`min: ${min}`)
+                console.log(`max: ${max}`)
                 // Send datetimepicker
                 // API Reference: https://developers.line.biz/ja/reference/messaging-api/#buttons
                 return client.replyMessage(event.replyToken, {
@@ -480,7 +482,7 @@ async function deleteTask(destination, datetime) {
     const queue = 'line-notify-queue';
 
     const response = await cloudTasksClient.deleteTask({name: `projects/${GCPProjectId}/locations/${location}/queues/${queue}/tasks/${destination}-${datetime.replace(":", "-")}`})
-    console.log(`Success delete task: ${response}`);
+    console.log(`Success delete task`);
 }
 
 function getNow() {
