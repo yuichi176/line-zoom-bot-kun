@@ -63,7 +63,11 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
-                        text: `わかったよ。\n${meetingUrl}`
+                        text: "わかったよ"
+                    },
+                    {
+                        type: 'text',
+                        text: meetingUrl
                     },
                 ]);
             } catch (error) {
@@ -399,7 +403,7 @@ async function issueZoomToken() {
 }
 
 // Create a meeting url
-// API Reference: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingCreate
+// API Reference: https://developers.zoom.us/docs/api/meetings/#tag/meetings/POST/meetings/{meetingId}/registrants
 async function createZoomMeeting(token, datetime) {
     try {
         const mtgResponse = await axios({
