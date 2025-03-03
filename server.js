@@ -63,12 +63,8 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
-                        text: "わかったよ"
+                        text: `わかったよ\n\n${meetingUrl}`
                     },
-                    {
-                        type: 'text',
-                        text: meetingUrl
-                    }
                 ]);
             } catch (error) {
                 console.error(error);
@@ -265,11 +261,7 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
-                        text: `✅ミーティングの予約が完了したよ`
-                    },
-                    {
-                        type: 'text',
-                        text: `時間が来たらお知らせするね`
+                        text: `✅ミーティングの予約が完了したよ。\n時間が来たらお知らせするね。`
                     }
                 ]);
             } catch (error) {
