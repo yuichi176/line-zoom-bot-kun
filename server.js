@@ -63,7 +63,7 @@ async function handleEvent(event) {
                 return client.replyMessage(event.replyToken, [
                     {
                         type: 'text',
-                        text: `わかったよ\n\n${meetingUrl}`
+                        text: `わかったよ。\n${meetingUrl}`
                     },
                 ]);
             } catch (error) {
