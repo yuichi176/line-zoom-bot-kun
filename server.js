@@ -412,14 +412,13 @@ async function createZoomMeeting(token, datetime) {
             headers: { 'Authorization': 'Bearer ' + token },
             data: {
                 'topic': 'people meeting',
-                "type": "1", // 1:Daily, 2:Weekly, 3:Monthly
+                "type": "2", // A scheduled meeting
                 "start_time": datetime,
                 'timezone': 'Asia/Tokyo',
                 'settings': {
                     "waiting_room": false,
                     "join_before_host": true,
                     "mute_upon_entry": true,
-                    "use_pmi": false
                 }
             }
         })
