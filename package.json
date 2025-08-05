@@ -2,7 +2,7 @@
   "name": "line-zoom-bot-kun",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "author": "YUICHI SUGIYAMA",
   "dependencies": {
