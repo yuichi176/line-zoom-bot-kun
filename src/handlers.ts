@@ -118,11 +118,11 @@ async function handleReserveRequest(event: LineWebhookEvent): Promise<any> {
         }
 
         const currentDate = new Date();
-        currentDate.setHours(currentDate.getHours());
-        const oneMonthLater = new Date();
-        currentDate.setHours(oneMonthLater.getHours());
+        const oneMonthLater = new Date(currentDate);
+
         oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
         oneMonthLater.setDate(oneMonthLater.getDate() - 1);
+
         const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16);
         const min = currentDate.toISOString().replace("T", "t").slice(0, 16);
         
