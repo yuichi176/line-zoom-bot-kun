@@ -1,14 +1,13 @@
 import { CloudTasksClient } from '@google-cloud/tasks';
 
-const GCP_PROJECT_ID = process.env.GCP_PROJECT_ID!;
-
-if (!GCP_PROJECT_ID) {
-    throw new Error('Missing required environment variable: GCP_PROJECT_ID');
-}
+const GCP_PROJECT_ID = process.env.GCP_PROJECT_ID;
 
 const cloudTasksClient = new CloudTasksClient();
 
 export async function createHttpTask(destination: string, datetime: string, meetingUrl: string): Promise<void> {
+    if (!GCP_PROJECT_ID) {
+        throw new Error('Missing required environment variable: GCP_PROJECT_ID');
+    }
     const location = 'asia-northeast1';
     const queue = 'line-notify-queue';
     const parent = cloudTasksClient.queuePath(GCP_PROJECT_ID, location, queue);
