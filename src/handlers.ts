@@ -4,12 +4,11 @@ import { createHttpTask, deleteTask } from './tasks';
 import { issueZoomToken, createZoomMeeting } from './zoom';
 import { getNow, formatDate, parseData, isZoom, isReserve, isReservedList, isCancel } from './utils';
 import {
-    LineConfig,
     LineWebhookEvent,
     TextMessage,
     TemplateMessage,
     QuickReplyMessage,
-    MeetingData, LineMessageEvent
+    MeetingData
 } from './types';
 
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_CHANNEL_ACCESS_TOKEN;

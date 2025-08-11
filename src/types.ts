@@ -1,8 +1,3 @@
-export interface LineConfig {
-    channelAccessToken: string;
-    channelSecret: string;
-}
-
 export interface MeetingData {
     startDatetime: string;
     zoomUrl: string;
