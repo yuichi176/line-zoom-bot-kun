@@ -180,11 +180,11 @@ async function handleReservedListRequest(event: LineWebhookEvent): Promise<any> 
 async function handleCancelRequest(event: LineWebhookEvent): Promise<any> {
     try {
         const currentDate = new Date();
-        currentDate.setHours(currentDate.getHours());
-        const oneMonthLater = new Date();
-        currentDate.setHours(oneMonthLater.getHours());
+        const oneMonthLater = new Date(currentDate);
+
         oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
         oneMonthLater.setDate(oneMonthLater.getDate() - 1);
+
         const max = oneMonthLater.toISOString().replace("T", "t").slice(0, 16);
         const min = currentDate.toISOString().replace("T", "t").slice(0, 16);
 
